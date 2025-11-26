@@ -1,4 +1,4 @@
-const API_URL = 'https://song-of-the-week-i933.onrender.com/api';
+const API_URL = '/api';
 
 async function init() {
     try {
