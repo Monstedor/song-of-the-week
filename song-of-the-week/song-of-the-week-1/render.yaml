@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: song-of-the-week-api
+    env: node
+    region: frankfurt
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
