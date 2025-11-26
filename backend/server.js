@@ -12,6 +12,9 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Serve frontend files
+app.use(express.static(path.join(__dirname, '../frontend')));
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
