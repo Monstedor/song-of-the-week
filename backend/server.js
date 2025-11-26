@@ -12,6 +12,210 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Share page route (before static files!)
+app.get('/share/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const share = db.getShare(id);
+    
+    if (!share) {
+      return res.status(404).send('Share not found');
+    }
+
+    const song = songsData.songs?.find(s => s.id === share.song_id);
+    
+    if (!song) {
+      return res.status(404).send('Song not found');
+    }
+
+    const ip = getClientIP(req);
+    const ipHash = db.hashIP(ip);
+    const hasVoted = db.hasVotedToday(ipHash);
+
+    // HTML page with embedded song and voting
+    const html = `
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${song.title} - Song of the Week</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #ffffff;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid #404040;
+            padding: 40px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+        .artist {
+            color: #a0a0a0;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+        iframe {
+            width: 100%;
+            height: 150px;
+            border: none;
+            margin: 20px 0;
+        }
+        .vote-section {
+            margin: 30px 0;
+            padding: 30px 0;
+            border-top: 1px solid #404040;
+            border-bottom: 1px solid #404040;
+        }
+        .vote-prompt {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+        .vote-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 12px 24px;
+            background: transparent;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+            font-family: inherit;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 140px;
+        }
+        button:hover:not(:disabled) {
+            background: #ffffff;
+            color: #0a0a0a;
+        }
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .vote-success {
+            color: #4ade80;
+            font-size: 1rem;
+            margin: 20px 0;
+        }
+        .cta {
+            margin-top: 30px;
+        }
+        .cta-text {
+            color: #a0a0a0;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        a {
+            display: inline-block;
+            padding: 12px 24px;
+            background: transparent;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        a:hover {
+            background: #ffffff;
+            color: #0a0a0a;
+        }
+        .error {
+            color: #f87171;
+            margin-top: 10px;
+        }
+        @media (max-width: 600px) {
+            .vote-buttons { flex-direction: column; }
+            button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 ${song.title}</h1>
+        <div class="artist">Wykonanie: ${song.artist}</div>
+        
+        <iframe src="${song.embedUrl}?autoplay=false" allowfullscreen></iframe>
+        
+        <div class="vote-section">
+            ${hasVoted ? `
+                <div class="vote-success">✓ Dziękujemy za głos!</div>
+            ` : `
+                <div class="vote-prompt">Podoba Ci się? Zagłosuj!</div>
+                <div class="vote-buttons">
+                    <button onclick="vote('like')">👍 Podoba mi się</button>
+                    <button onclick="vote('dislike')">👎 Nie podoba mi się</button>
+                </div>
+                <div id="error" class="error"></div>
+            `}
+        </div>
+        
+        <div class="cta">
+            <div class="cta-text">
+                Ta piosenka jest częścią "Song of the Week"
+            </div>
+            <a href="/">Zobacz pozostałe wersje tej piosenki →</a>
+        </div>
+    </div>
+    
+    <script>
+        async function vote(voteType) {
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(btn => btn.disabled = true);
+            
+            try {
+                const response = await fetch('/api/vote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        songId: '${song.id}', 
+                        voteType: voteType 
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    document.getElementById('error').textContent = data.error || 'Błąd głosowania';
+                    buttons.forEach(btn => btn.disabled = false);
+                }
+            } catch (err) {
+                document.getElementById('error').textContent = 'Błąd połączenia';
+                buttons.forEach(btn => btn.disabled = false);
+            }
+        }
+    </script>
+</body>
+</html>
+    `;
+    
+    res.send(html);
+  } catch (err) {
+    res.status(500).send('Error loading share');
+  }
+});
+
+
 // Serve frontend files
 app.use(express.static(path.join(__dirname, '../frontend')));
 
