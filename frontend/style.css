@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap');
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
@@ -5,12 +7,13 @@
     --text: #ffffff;
     --text-dim: #a0a0a0;
     --accent: #404040;
+    --border-light: #909090;
     --success: #4ade80;
     --error: #f87171;
 }
 
 body {
-    font-family: 'Courier New', monospace;
+    font-family: 'Cormorant Garamond', serif;
     background: var(--bg);
     color: var(--text);
     line-height: 1.6;
@@ -69,7 +72,7 @@ main { padding: 40px 20px; }
 
 .song-card {
     background: rgba(255,255,255,0.05);
-    border: 1px solid var(--accent);
+    border: 1px solid var(--border-light);
     padding: 30px;
     margin-bottom: 20px;
 }
