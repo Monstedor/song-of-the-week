@@ -10,7 +10,7 @@ async function init() {
         if (data.day === 7) {
             showRanking();
         } else {
-            showSong(data.song, data.hasVoted);
+            showSong(data.song, data.hasVoted, data.previousDays || []);
         }
     } catch (err) {
         showError('Nie udało się załadować danych');
@@ -18,8 +18,14 @@ async function init() {
     }
 }
 
-function showSong(song, hasVoted) {
+function showSong(song, hasVoted, previousDays) {
     const main = document.getElementById('main-content');
+    
+    // Helper to get day name in Polish
+    const getDayName = (dayNumber) => {
+        const days = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela'];
+        return days[dayNumber - 1];
+    };
     
     main.innerHTML = `
         <div class="song-card">
@@ -51,6 +57,30 @@ function showSong(song, hasVoted) {
                 </div>
             ` : ''}
         </div>
+        
+        ${previousDays.length > 0 ? `
+            <div class="previous-days-section">
+                <h3 class="previous-days-title">🎵 W tym tygodniu słuchaliśmy:</h3>
+                
+                ${previousDays.map((prevSong, index) => `
+                    <div class="previous-day-card">
+                        <div class="previous-day-header">
+                            <span class="day-label">📅 Dzień ${index + 1}</span>
+                            <span class="day-name">${getDayName(index + 1)}</span>
+                        </div>
+                        <div class="previous-song-title">${prevSong.title}</div>
+                        <div class="previous-song-artist">${prevSong.artist}</div>
+                        <div class="previous-song-embed">
+                            <iframe src="${prevSong.embedUrl}?autoplay=false" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                `).join('')}
+                
+                <div class="current-day-indicator">
+                    📅 Dzień ${song.day} → Dzisiejsza piosenka ↑
+                </div>
+            </div>
+        ` : ''}
     `;
 }
 
