@@ -247,7 +247,7 @@ function getClientIP(req) {
 
 // Routes
 
-// GET /api/today - Get today's song
+// GET /api/today - Get today's song + previous days of this week
 app.get('/api/today', (req, res) => {
   try {
     const day = db.getCurrentDay();
@@ -261,10 +261,20 @@ app.get('/api/today', (req, res) => {
       return res.status(404).json({ error: 'No song for today' });
     }
 
+    // Get previous days of this week (days 1 to current_day-1)
+    const previousDays = [];
+    for (let i = 1; i < day; i++) {
+      const prevSong = songsData.songs?.[i - 1];
+      if (prevSong) {
+        previousDays.push(prevSong);
+      }
+    }
+
     res.json({
       day,
       song,
-      hasVoted
+      hasVoted,
+      previousDays
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
