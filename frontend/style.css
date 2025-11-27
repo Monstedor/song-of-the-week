@@ -55,8 +55,20 @@ main { padding: 40px 20px; }
     color: var(--text-dim);
 }
 
+.today-section {
+    margin-bottom: 40px;
+}
+
+.today-label {
+    font-size: 1.2rem;
+    font-weight: 400;
+    margin-bottom: 20px;
+    color: var(--text);
+    text-align: center;
+}
+
 .song-card {
-    background: rgba(255,255,255,0.02);
+    background: rgba(255,255,255,0.05);
     border: 1px solid var(--accent);
     padding: 30px;
     margin-bottom: 20px;

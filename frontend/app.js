@@ -28,34 +28,38 @@ function showSong(song, hasVoted, previousDays) {
     };
     
     main.innerHTML = `
-        <div class="song-card">
-            <h2 class="song-title">${song.title}</h2>
-            <div class="song-artist">Wykonanie: ${song.artist}</div>
+        <div class="today-section">
+            <h3 class="today-label">🎵 Dzisiaj słuchamy:</h3>
             
-            <div class="song-embed">
-                <iframe src="${song.embedUrl}?autoplay=false" allowfullscreen></iframe>
+            <div class="song-card">
+                <h2 class="song-title">${song.title}</h2>
+                <div class="song-artist">Wykonanie: ${song.artist}</div>
+                
+                <div class="song-embed">
+                    <iframe src="${song.embedUrl}?autoplay=false" allowfullscreen></iframe>
+                </div>
+                
+                ${hasVoted ? `
+                    <div class="vote-success">✓ Dziękujemy za głos!</div>
+                ` : `
+                    <div class="vote-buttons">
+                        <button class="btn btn-like" onclick="vote('${song.id}', 'like')">
+                            👍 Podoba mi się
+                        </button>
+                        <button class="btn btn-dislike" onclick="vote('${song.id}', 'dislike')">
+                            👎 Nie podoba mi się
+                        </button>
+                    </div>
+                `}
+                
+                ${hasVoted ? `
+                    <div class="share-section">
+                        <button class="btn" onclick="shareSong('${song.id}')">
+                            🔗 Udostępnij tę wersję
+                        </button>
+                    </div>
+                ` : ''}
             </div>
-            
-            ${hasVoted ? `
-                <div class="vote-success">✓ Dziękujemy za głos!</div>
-            ` : `
-                <div class="vote-buttons">
-                    <button class="btn btn-like" onclick="vote('${song.id}', 'like')">
-                        👍 Podoba mi się
-                    </button>
-                    <button class="btn btn-dislike" onclick="vote('${song.id}', 'dislike')">
-                        👎 Nie podoba mi się
-                    </button>
-                </div>
-            `}
-            
-            ${hasVoted ? `
-                <div class="share-section">
-                    <button class="btn" onclick="shareSong('${song.id}')">
-                        🔗 Udostępnij tę wersję
-                    </button>
-                </div>
-            ` : ''}
         </div>
         
         ${previousDays.length > 0 ? `
